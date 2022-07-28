@@ -1,0 +1,9 @@
+float64[15] joint_angle
+float64[15] joint_angle_des
+float64[15] joint_velocity
+float64[15] joint_torque
+float64[6] left_hand
+float64[6] right_hand
+float64[6] left_hand_des
+float64[6] right_hand_des
+float64 time

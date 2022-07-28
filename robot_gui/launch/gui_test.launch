@@ -1,0 +1,4 @@
+<launch>
+  <node name="gui" pkg="robot_gui" type="gui_node" output="screen"/>
+  <node name="test_pub" pkg="robot_gui" type="test_pub" output="screen"/>
+</launch>

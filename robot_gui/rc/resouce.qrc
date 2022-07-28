@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>kist.png</file>
+    </qresource>
+</RCC>
