@@ -32,38 +32,35 @@ public:
   void show_graph();
 
   void init_plot();
+  void update_plot(int graph_num, double x_, double y_);
 
-  void re_plot(int graph_num, double x_, double y_);
   void pub_joint();
 
 private:
   Ui::gui *ui;
   QTimer *ros_timer;
 
-  ros::NodeHandlePtr nh_;
+  ros::NodeHandle nh;
 
-  ros::Subscriber angles_sub;
-  ros::Publisher command_pub;
-  ros::Publisher joint_pub;
+  ros::Subscriber state_sub; // robot state sub
+  ros::Publisher command_pub; // control command pub
+  ros::Publisher joint_pub; // joint angles pub to robot_state_publisher
 
   QString fileName = "/home/kist/catkin_ws/src/robot_gui/saved_graph/save.png"; // save directory
 
-  QVector<double> g0_x;
-  QVector<double> g0_y;
-
-  QVector<double> g1_x;
-  QVector<double> g1_y;
-
-  QVector<double> g2_x;
-  QVector<double> g2_y;
+  QVector<double> g0_x, g0_y;
+  QVector<double> g1_x, g1_y;
+  QVector<double> g2_x, g2_y;
 
   const int x_range = 100;  // xAxis range
   const int y_range = 5;  // yAxis range
 
   int angle_mode = 0; // angle unit defalut=0
-                // 0->radian, 1->degree
+                      // 0->radian, 1->degree
 
   kist_msgs::arm_state arm_state;
+
+  bool rviz_mode = false;
 
 
 public slots:
@@ -72,20 +69,14 @@ public slots:
 
   void save_clicked();
 
-
   void torque_off_clicked();
-
   void gravity_clicked();
   void initial_clicked();
   void task_clicked();
 
-
   void spinOnce();
 
   void angle_unit_clicked();
-
-//private slots:
-//  void init_plot();
 
 };
 

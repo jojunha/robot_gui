@@ -6,22 +6,22 @@
 int main(int argc, char *argv[])
 {
 
-  ros::init(argc, argv, "GUI",ros::init_options::AnonymousName);
+  ros::init(argc, argv, "GUI");
   QApplication a(argc, argv);
+
 
   a.setQuitOnLastWindowClosed(false);
 
-  gui d;
-
+  gui g;
   // set the window title as the node name
-  d.setWindowTitle(QString::fromStdString("ROBOT GUI"));
+  g.setWindowTitle(QString::fromStdString("ROBOT GUI"));
 
   // load the icon from our qrc file and set it as the application icon
   QIcon icon(":/icons/kist.png");
 
-  d.setWindowIcon(icon);
+  g.setWindowIcon(icon);
 
-  d.show();
+  g.show();
 
 // a.exec -> event 처리
   return a.exec();

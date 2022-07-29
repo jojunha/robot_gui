@@ -10,11 +10,9 @@ gui::gui(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  nh_.reset(new ros::NodeHandle("~"));
-
   ros_timer = new QTimer(this);
   connect(ros_timer, SIGNAL(timeout()), this, SLOT(spinOnce()));
-  ros_timer->start(60);
+  ros_timer->start(60);  // ROS Commnication Hz
 
   connect(ui->graph0,SIGNAL(clicked()),this,SLOT(graph_on_clicked()));
   connect(ui->graph1,SIGNAL(clicked()),this,SLOT(graph_on_clicked()));
@@ -32,17 +30,17 @@ gui::gui(QWidget *parent) :
 
   ui->radian->setChecked(true);
 
+  state_sub = nh.subscribe<kist_msgs::arm_state>("/arm_states", 1, &gui::StateCB, this);
+  command_pub = nh.advertise<std_msgs::UInt32>("/gui_command", 10);
+  joint_pub = nh.advertise<sensor_msgs::JointState>("/joint_states", 100);
 
-  angles_sub = nh_->subscribe<kist_msgs::arm_state>("/arm_states", 1, &gui::StateCB, this);
-
-  command_pub = nh_->advertise<std_msgs::UInt32>("/gui_command", 10);
-
-  joint_pub = nh_->advertise<sensor_msgs::JointState>("/joint_states", 100);
+  nh.param<bool>("rviz_mode", rviz_mode, false);
 
   gui::init_plot();
 
   sleep(2);
   gui::pub_joint();
+  ui->state->setText("Torque OFF");
 
 }
 
@@ -71,23 +69,21 @@ void gui::angle_unit_clicked(){
   }
 }
 
-
-
 void gui::graph_on_clicked(){
   if(!(ui->graph0->isChecked())){
     cout << "graph0 reset!" << endl;
     g0_x.clear();
-    g0_y.clear();
+    g0_x.clear();
   }
   if(!(ui->graph1->isChecked())){
     cout << "graph1 reset!" << endl;
     g1_x.clear();
-    g1_y.clear();
+    g1_x.clear();
   }
   if(!(ui->graph2->isChecked())){
     cout << "graph2 reset!" << endl;
     g2_x.clear();
-    g2_y.clear();
+    g2_x.clear();
   }
 }
 
@@ -125,18 +121,17 @@ void gui::task_clicked(){
 }
 
 
-
-
-
-
-
 void gui::StateCB(const kist_msgs::arm_state::ConstPtr& msg){
 
-  arm_state = *msg;
+  arm_state = *msg; // state update
 
   show_state();
   show_graph();
-  pub_joint();
+  
+  if(rviz_mode){
+    pub_joint();
+  }
+
 }
 
 void gui::show_state(){
@@ -194,7 +189,6 @@ void gui::show_state(){
   }
 }
 
-
 void gui::show_graph(){
   if(ui->graph0->isChecked()){
     double error = 0;
@@ -202,7 +196,7 @@ void gui::show_graph(){
       error += pow(arm_state.joint_angle_des[i] - arm_state.joint_angle[i],2);
     }
     error /= 15;
-    re_plot(0, arm_state.time, error);
+    update_plot(0, arm_state.time, error);
   }
 
   if(ui->graph1->isChecked()){
@@ -211,7 +205,7 @@ void gui::show_graph(){
       error += pow(arm_state.left_hand_des[i] - arm_state.left_hand[i],2);
     }
     error /= 6;
-    re_plot(1, arm_state.time, error);
+    update_plot(1, arm_state.time, error);
   }
 
   if(ui->graph2->isChecked()){
@@ -220,7 +214,7 @@ void gui::show_graph(){
       error += pow(arm_state.right_hand_des[i] - arm_state.right_hand[i],2);
     }
     error /= 6;
-    re_plot(2, arm_state.time, error);
+    update_plot(2, arm_state.time, error);
   }
 }
 
@@ -249,7 +243,6 @@ void gui::init_plot(){
   ui->graph1->setChecked(true);
   ui->graph2->setChecked(true);
 
-
   ui->plot->legend->setVisible(true);
   ui->plot->legend->setBrush(QColor(255, 255, 255, 100));
 
@@ -258,30 +251,27 @@ void gui::init_plot(){
   ui->plot->replot();
 }
 
-void gui::re_plot(int graph_num, double x_, double y_){
+void gui::update_plot(int graph_num, double _x, double _y){
   if(graph_num == 0){
-    g0_x.append(x_);
-    g0_y.append(y_);
+    g0_x.append(_x);
+    g0_y.append(_y);
     ui->plot->graph(0)->setData(g0_x, g0_y);
   }
   if(graph_num == 1){
-    g1_x.append(x_);
-    g1_y.append(y_);
+    g1_x.append(_x);
+    g1_y.append(_y);
     ui->plot->graph(1)->setData(g1_x, g1_y);
   }
   if(graph_num == 2){
-    g2_x.append(x_);
-    g2_y.append(y_);
+    g2_x.append(_x);
+    g2_y.append(_y);
     ui->plot->graph(2)->setData(g2_x, g2_y);
   }
-
-//  if(count > x_range){
-//    ui->plot->xAxis->setRange(count-x_range,count);
-//  }
 
   ui->plot->replot();
 }
 
+// For rviz
 void gui::pub_joint(){
   sensor_msgs::JointState joint_state;
 
@@ -302,6 +292,7 @@ void gui::pub_joint(){
   joint_state.name.push_back("j14");
 
   joint_state.position.push_back(0.0);
+
   for(int i = 1; i<15; i++){
     joint_state.position.push_back(arm_state.joint_angle[i]);
   }
