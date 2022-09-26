@@ -6,4 +6,6 @@ float64[6] left_hand
 float64[6] right_hand
 float64[6] left_hand_des
 float64[6] right_hand_des
+float64[16] hand_angle
+int64 hand_mode
 float64 time

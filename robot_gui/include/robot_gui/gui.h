@@ -26,16 +26,6 @@ public:
   explicit gui(QWidget *parent = nullptr);
   ~gui();
 
-  void StateCB(const kist_msgs::arm_state::ConstPtr& msg);
-
-  void show_state();
-  void show_graph();
-
-  void init_plot();
-  void update_plot(int graph_num, double x_, double y_);
-
-  void pub_joint();
-
 private:
   Ui::gui *ui;
   QTimer *ros_timer;
@@ -58,10 +48,24 @@ private:
   int angle_mode = 0; // angle unit defalut=0
                       // 0->radian, 1->degree
 
-  kist_msgs::arm_state arm_state;
+  kist_msgs::arm_state arm_state; // recieve topic
 
-  bool rviz_mode = false;
+  bool rviz_mode = false; 
 
+  char hand_command[14][20] = {"zero torque", "4 finger grasp", "3 finger grasp", "2 finger grasp", "envelop grasp", "5", "6", 
+                            "7", "8","9","home","current", "grasp ready", "grasp like motion"}; // hand command
+  int _hand_mode = 0; // index of hand_command
+
+  void StateCB(const kist_msgs::arm_state::ConstPtr& msg); // robot state callback function
+
+  void show_arm_state();
+  void show_hand_state();
+  void show_graph();
+
+  void init_plot();
+  void update_plot(int graph_num, double x_, double y_);
+
+  void pub_joint();
 
 public slots:
 
@@ -74,9 +78,14 @@ public slots:
   void initial_clicked();
   void task_clicked();
 
-  void spinOnce();
+  void hand_on_clicked();
+  void hand_off_clicked();
+  void emergency_clicked();
 
-  void angle_unit_clicked();
+  void angle_unit_clicked(); // radian, degree
+
+  void spinOnce(); // for ROS callback
+
 
 };
 

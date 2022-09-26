@@ -33,6 +33,11 @@ int main(int argc, char **argv)
       state.right_hand_des[i] = rand() % (15 + i) + 0.1;
     }
 
+    for(int i = 0; i < 16; i++){
+      state.hand_angle[i] = rand() % (10 + i) + 0.1;
+    }
+    state.hand_mode = 13;
+
     state.time = count;
     joint_pub.publish(state);
 

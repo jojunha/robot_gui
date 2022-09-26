@@ -25,10 +25,20 @@ gui::gui(QWidget *parent) :
   connect(ui->initial,SIGNAL(clicked()),this,SLOT(initial_clicked()));
   connect(ui->task,SIGNAL(clicked()),this,SLOT(task_clicked()));
 
+  connect(ui->hand_torque_off,SIGNAL(clicked()),this,SLOT(hand_off_clicked()));
+  connect(ui->hand_torque_on,SIGNAL(clicked()),this,SLOT(hand_on_clicked()));
+  connect(ui->emergency,SIGNAL(clicked()),this,SLOT(emergency_clicked()));
+
   connect(ui->radian,SIGNAL(clicked()),this,SLOT(angle_unit_clicked()));
   connect(ui->degree,SIGNAL(clicked()),this,SLOT(angle_unit_clicked()));
 
   ui->radian->setChecked(true);
+  ui->tabWidget->setStyleSheet("background-color: rgb(240, 240, 240)");
+  ui->tabWidget->setStyleSheet("QTabBar::tab { background-color: rgb(180,180,180)");
+  ui->tabWidget->tabBar()->setStyleSheet("QTabBar::tab:selected {\
+                                           color: rgb(0,0,0);\
+                                           background-color: rgb(240,240,240);\
+                                       }");
 
   state_sub = nh.subscribe<kist_msgs::arm_state>("/arm_states", 1, &gui::StateCB, this);
   command_pub = nh.advertise<std_msgs::UInt32>("/gui_command", 10);
@@ -41,6 +51,7 @@ gui::gui(QWidget *parent) :
   sleep(2);
   gui::pub_joint();
   ui->state->setText("Torque OFF");
+  ui->state_2->setText("Torque OFF");
 
 }
 
@@ -120,21 +131,50 @@ void gui::task_clicked(){
   ui->state->setText("Task");
 }
 
+void gui::hand_on_clicked(){
+  std_msgs::UInt32 msg;
+  msg.data = 5;
+  command_pub.publish(msg);
+  ui->state_2->setText("Torque ON");
+}
+
+void gui::hand_off_clicked(){
+  std_msgs::UInt32 msg;
+  msg.data = 6;
+  command_pub.publish(msg);
+  ui->state_2->setText("Torque OFF");
+}
+
+void gui::emergency_clicked(){
+  std_msgs::UInt32 msg;
+  msg.data = 7;
+  command_pub.publish(msg);
+  ui->state->setText("Torque OFF");
+  ui->state_2->setText("Torque OFF");
+}
+
 
 void gui::StateCB(const kist_msgs::arm_state::ConstPtr& msg){
 
   arm_state = *msg; // state update
 
-  show_state();
+  show_arm_state();
+  show_hand_state();
   show_graph();
-  
+
+  if(_hand_mode != msg->hand_mode)
+  {
+    _hand_mode = msg->hand_mode;
+    ui->state_2->setText(hand_command[_hand_mode]);
+  }
+
   if(rviz_mode){
     pub_joint();
   }
 
 }
 
-void gui::show_state(){
+void gui::show_arm_state(){
 
   ui->time->setNum(arm_state.time);
 
@@ -188,6 +228,42 @@ void gui::show_state(){
     }
   }
 }
+
+
+void gui::show_hand_state(){
+  // radian mode
+  if(angle_mode == 0){
+    for(int i = 0; i < 4; i++){
+      ui->hand_table->setItem(i,0,new QTableWidgetItem(QString::number(arm_state.hand_angle[i])));
+      ui->hand_table->item(i,0)->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+
+      ui->hand_table->setItem(i,1,new QTableWidgetItem(QString::number(arm_state.hand_angle[i+4])));
+      ui->hand_table->item(i,1)->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+
+      ui->hand_table->setItem(i,2,new QTableWidgetItem(QString::number(arm_state.hand_angle[i+8])));
+      ui->hand_table->item(i,2)->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+
+      ui->hand_table->setItem(i,3,new QTableWidgetItem(QString::number(arm_state.hand_angle[i+12])));
+      ui->hand_table->item(i,3)->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+    }
+  }
+  else{ // degree mode
+    for(int i = 0; i < 4; i++){
+      ui->hand_table->setItem(i,0,new QTableWidgetItem(QString::number(radian_to_degree * arm_state.hand_angle[i])));
+      ui->hand_table->item(i,0)->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+
+      ui->hand_table->setItem(i,1,new QTableWidgetItem(QString::number(radian_to_degree * arm_state.hand_angle[i+4])));
+      ui->hand_table->item(i,1)->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+
+      ui->hand_table->setItem(i,2,new QTableWidgetItem(QString::number(radian_to_degree * arm_state.hand_angle[i+8])));
+      ui->hand_table->item(i,2)->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+
+      ui->hand_table->setItem(i,3,new QTableWidgetItem(QString::number(radian_to_degree * arm_state.hand_angle[i+12])));
+      ui->hand_table->item(i,3)->setTextAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+    }
+  }
+}
+
 
 void gui::show_graph(){
   if(ui->graph0->isChecked()){
