@@ -1,4 +1,4 @@
-# KIST DualArm Robot GUI
+# KIST DualArm with Hand Robot GUI
 
 > GUI
 ```
