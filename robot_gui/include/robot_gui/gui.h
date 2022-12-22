@@ -54,6 +54,7 @@ private:
 
   char hand_command[14][20] = {"zero torque", "4 finger grasp", "3 finger grasp", "2 finger grasp", "envelop grasp", "5", "6", 
                             "7", "8","9","home","current", "grasp ready", "grasp like motion"}; // hand command
+                            
   int _hand_mode = 0; // index of hand_command
 
   void StateCB(const kist_msgs::arm_state::ConstPtr& msg); // robot state callback function

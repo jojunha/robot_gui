@@ -4,7 +4,7 @@
 	<param name="robot_description" textfile="$(arg model)" />
 	<param name="rviz_mode" type="bool" value="true" />
 
-    	<node name="gui" pkg="robot_gui" type="gui_node" output="screen"/>
+    <node name="gui" pkg="robot_gui" type="gui_node" output="screen"/>
 
 	<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 	

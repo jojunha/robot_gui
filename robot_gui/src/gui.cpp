@@ -84,24 +84,23 @@ void gui::graph_on_clicked(){
   if(!(ui->graph0->isChecked())){
     cout << "graph0 reset!" << endl;
     g0_x.clear();
-    g0_x.clear();
+    g0_y.clear();
   }
   if(!(ui->graph1->isChecked())){
     cout << "graph1 reset!" << endl;
     g1_x.clear();
-    g1_x.clear();
+    g1_y.clear();
   }
   if(!(ui->graph2->isChecked())){
     cout << "graph2 reset!" << endl;
     g2_x.clear();
-    g2_x.clear();
+    g2_y.clear();
   }
 }
 
 void gui::save_clicked(){
   ui->plot->savePng(fileName,  0, 0, 1.0, -1);
 }
-
 
 void gui::torque_off_clicked(){
   std_msgs::UInt32 msg;
@@ -173,6 +172,7 @@ void gui::StateCB(const kist_msgs::arm_state::ConstPtr& msg){
   }
 
 }
+
 
 void gui::show_arm_state(){
 
